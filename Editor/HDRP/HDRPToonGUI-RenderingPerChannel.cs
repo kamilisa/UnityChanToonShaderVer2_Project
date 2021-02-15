@@ -148,7 +148,6 @@ namespace UnityEditor.Rendering.HDRP.Toon
                 m_clippingMask.Add(_ChannelEnum.SecondShade.ToString());
                 m_clippingMask.Add(_ChannelEnum.Highlight.ToString());
                 m_clippingMask.Add(_ChannelEnum.AngelRing.ToString());
-                m_clippingMask.Add(_ChannelEnum.RimLight.ToString());
 
 
             }

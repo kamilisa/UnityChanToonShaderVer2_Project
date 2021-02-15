@@ -184,6 +184,13 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
     float4 _HighColor_Tex_var = tex2D(_HighColor_Tex, TRANSFORM_TEX(Set_UV0, _HighColor_Tex));
     //Composition: 3 Basic Colors and HighColor as Set_HighColor
     float3 _HighColor_var = (lerp((_HighColor_Tex_var.rgb * _HighColor.rgb), ((_HighColor_Tex_var.rgb * _HighColor.rgb) * Set_LightColor), _Is_LightColor_HighColor) * _TweakHighColorMask_var);
+#ifdef _IS_CLIPPING_MASK
+    if (_ClippingMaskMode == 4)
+    {
+        clippingColor = _HighColor_var;
+        return clippingColor;
+    }
+#endif // _IS_CLIPPING_MASK
 #ifdef UTS_LAYER_VISIBILITY
     float3 Set_HighColor;
     {
@@ -216,6 +223,7 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
     float3 _LightDirection_MaskOn_var = lerp((_Is_LightColor_RimLight_var * _Rimlight_InsideMask_var), (_Is_LightColor_RimLight_var * saturate((_Rimlight_InsideMask_var - ((1.0 - _VertHalfLambert_var) + _Tweak_LightDirection_MaskLevel)))), _LightDirection_MaskOn);
     float _ApRimLightPower_var = pow(_RimArea_var, exp2(lerp(3, 0, _Ap_RimLight_Power)));
     //Composition: HighColor and RimLight as _RimLight_var
+
 #ifdef UTS_LAYER_VISIBILITY
 
     float4 overridingRimColor = lerp(_RimLightMaskColor, float4(_RimLightMaskColor.w, 0.0f, 0.0f, 1.0f), _ComposerMaskMode);
@@ -233,6 +241,7 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
     float3 Set_RimLight = (saturate((_Set_RimLightMask_var.g + _Tweak_RimLightMaskLevel)) * lerp(_LightDirection_MaskOn_var, (_LightDirection_MaskOn_var + (lerp(_Ap_RimLightColor.rgb, (_Ap_RimLightColor.rgb * Set_LightColor), _Is_LightColor_Ap_RimLight) * saturate((lerp((0.0 + ((_ApRimLightPower_var - _RimLight_InsideMask) * (1.0 - 0.0)) / (1.0 - _RimLight_InsideMask)), step(_RimLight_InsideMask, _ApRimLightPower_var), _Ap_RimLight_FeatherOff) - (saturate(_VertHalfLambert_var) + _Tweak_LightDirection_MaskLevel))))), _Add_Antipodean_RimLight));
     float3 _RimLight_var = lerp(Set_HighColor, (Set_HighColor + Set_RimLight), _RimLight);
 #endif
+
     //Matcap
     //v.2.0.6 : CameraRolling Stabilizer
     //Mirror Script Determination: if sign_Mirror = -1, determine "Inside the mirror".
@@ -331,7 +340,16 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
 # else
     finalColor = lerp(finalColor, lerp((finalColor + Set_AngelRing), ((finalColor * (1.0 - Set_ARtexAlpha)) + Set_AngelRingWithAlpha), _ARSampler_AlphaOn), _AngelRing);// Final Composition before Emissive
 # endif //#ifdef UTS_LAYER_VISIBILITY
+#ifdef _IS_CLIPPING_MASK
+    if (_ClippingMaskMode == 6)
+    {
+        clippingColor = Set_AngelRingWithAlpha;
+        return clippingColor;
+    }
+#endif // _IS_CLIPPING_MASK
 #endif //#ifdef _IS_ANGELRING_OFF
+
+
 //v.2.0.7
 #ifdef _EMISSIVE_SIMPLE
     float4 _Emissive_Tex_var = tex2D(_Emissive_Tex, TRANSFORM_TEX(Set_UV0, _Emissive_Tex));
