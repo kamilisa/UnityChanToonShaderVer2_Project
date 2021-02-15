@@ -49,6 +49,7 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
 #endif
 
 
+
     float shadowAttenuation = lightLoopContext.shadowValue;
 
 
@@ -81,6 +82,15 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
     float3 Set_LightColor = lightColor.rgb;
 
     float3 Set_BaseColor = lerp((_BaseColor.rgb * _MainTex_var.rgb), ((_BaseColor.rgb * _MainTex_var.rgb) * Set_LightColor), _Is_LightColor_Base);
+    float3 clippingColor = float3(1.0f, 1.0f, 1.0f);
+#ifdef _IS_CLIPPING_MASK
+    if (_ClippingMaskMode == 1)
+    {
+        clippingColor = Set_BaseColor;
+        return clippingColor;
+    }
+#endif // _IS_CLIPPING_MASK
+
 #ifdef UTS_LAYER_VISIBILITY
 
     float4 overridingColor = lerp(_BaseColorMaskColor, float4(_BaseColorMaskColor.w, 0.0f, 0.0f, 1.0f), _ComposerMaskMode);
@@ -113,6 +123,13 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
     float _1stColorFeatherForMask = lerp(_1st_ShadeColor_Feather, 0.0f, max(_ComposerMaskMode, _FirstShadeOverridden));
     //
     float Set_FinalShadowMask = saturate((1.0 + ((Set_ShadingGrade - (_1st_ShadeColor_Step - _1stColorFeatherForMask)) * (0.0 - 1.0)) / (_1st_ShadeColor_Step - (_1st_ShadeColor_Step - _1stColorFeatherForMask)))); // Base and 1st Shade Mask
+#ifdef _IS_CLIPPING_MASK
+    if (_ClippingMaskMode == 2)
+    {
+        clippingColor = _1stColorFeatherForMask;
+        return clippingColor;
+    }
+#endif // _IS_CLIPPING_MASK
 
 #ifdef UTS_LAYER_VISIBILITY
     {
@@ -128,6 +145,13 @@ float3 UTS_MainLightShadingGrademap(LightLoopContext lightLoopContext, FragInput
     float _2ndColorFeatherForMask = lerp(_2nd_ShadeColor_Feather, 0.0f, max(_SecondShadeOverridden, _ComposerMaskMode));
     float Set_ShadeShadowMask = saturate((1.0 + ((Set_ShadingGrade - (_2nd_ShadeColor_Step - _2ndColorFeatherForMask)) * (0.0 - 1.0)) / (_2nd_ShadeColor_Step - (_2nd_ShadeColor_Step - _2ndColorFeatherForMask)))); // 1st and 2nd Shades Mask
     //Composition: 3 Basic Colors as Set_FinalBaseColor
+#ifdef _IS_CLIPPING_MASK
+    if (_ClippingMaskMode == 3)
+    {
+        clippingColor = _2ndColorFeatherForMask;
+        return clippingColor;
+    }
+#endif // _IS_CLIPPING_MASK
 #ifdef UTS_LAYER_VISIBILITY
     float3 Set_FinalBaseColor;
     {

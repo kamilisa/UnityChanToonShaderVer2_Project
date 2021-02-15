@@ -40,9 +40,9 @@
             uniform float _OutlineOverridden;
             uniform float4 _OutlineMaskColor;
             uniform float _ComposerMaskMode;
-            uniform float _ClippingMaskMode;
-            uniform float _ComposerClippingMaskMode;
-            uniform float4 _ClippingMaskColor;
+            uniform int _ClippingMaskMode;
+
+
 //v.2.0.4
 #ifdef _IS_OUTLINE_CLIPPING_YES
             uniform sampler2D _ClippingMask; uniform float4 _ClippingMask_ST;
@@ -113,7 +113,7 @@
             }
             float4 frag(VertexOutput i) : SV_Target{
 #ifdef _IS_CLIPPING_MASK
-                if (_ClippingMaskMode > 0.1 || _ComposerClippingMaskMode > 0.1)
+                if (_ClippingMaskMode != 0)
                 {
                     discard;
                 }
